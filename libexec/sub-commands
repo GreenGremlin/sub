@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Usage: sub commands
-# Summary: List all sub commands
+# Summary: List all ${SUB_COMMAND_NAME} commands
 # Help: This command is mostly used for autocompletion in various shells, and for `sub help`.
 # Also, this command helps find commands that are named the same as potentially builtin shell commands (which, cd, etc)
 
 set -e
+
+[ -f "$_SUB_ROOT/share/colors.bash" ] && . "$_SUB_ROOT/share/colors.bash"
 
 # Provide sub completions
 if [ "$1" = "--complete" ]; then
@@ -23,19 +25,24 @@ fi
 
 shopt -s nullglob
 
-{ for path in ${PATH//:/$'\n'}; do
-    for command in "${path}/sub-"*; do
+if [ "$1" != "--no-color" ]; then
+  function color_fn { echo `clr_yellow $1`; }
+else
+  function color_fn { echo $1; }
+fi
+{ for path in ${SUB_PATH//:/$'\n'}; do
+    for command in "${path}/${SUB_COMMAND_PREFIX}-"*; do
       command="${command##*sub-}"
       if [ -n "$sh" ]; then
         if [ ${command:0:3} = "sh-" ]; then
-          echo ${command##sh-}
+          echo -e `color_fn ${command##sh-}`
         fi
       elif [ -n "$nosh" ]; then
         if [ ${command:0:3} != "sh-" ]; then
-          echo ${command##sh-}
+          echo -e `color_fn ${command##sh-}`
         fi
       else
-        echo ${command##sh-}
+        echo -e `color_fn ${command##sh-}`
       fi
     done
   done

@@ -3,12 +3,12 @@ set -e
 
 COMMAND="$1"
 if [ -z "$COMMAND" ]; then
-  echo "usage: sub completions COMMAND [arg1 arg2...]" >&2
+  echo "usage: ${SUB_COMMAND_NAME} completions COMMAND [arg1 arg2...]" >&2
   exit 1
 fi
 
-COMMAND_PATH="$(command -v "sub-$COMMAND")"
-if grep -i "^# provide sub completions" "$COMMAND_PATH" >/dev/null; then
+COMMAND_PATH="$(command -v "${SUB_COMMAND_PREFIX}-${COMMAND}")"
+if grep -i "^# provide sub completions" "${COMMAND_PATH}" >/dev/null; then
   shift
   exec "$COMMAND_PATH" --complete "$@"
 fi

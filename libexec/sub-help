@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 set -e
 
+. "$_SUB_ROOT/share/colors.bash"
+
 print_summaries() {
   local commands=()
   local summaries=()
   local longest_command=0
   local command
 
-  for command in $(sub-commands); do
+  for command in $(sub-commands --no-color); do
     local file="$(command_path "$command")"
     if [ ! -h "$file" ]; then
       local summary="$(summary "$file")"
       if [ -n "$summary" ]; then
         commands["${#commands[@]}"]="$command"
-        summaries["${#summaries[@]}"]="$summary"
+        summaries["${#summaries[@]}"]=$(eval echo $summary)
 
         if [ "${#command}" -gt "$longest_command" ]; then
           longest_command="${#command}"
@@ -27,7 +29,7 @@ print_summaries() {
   local summary_length=$(( $columns - $longest_command - 5 ))
 
   for (( index=0; index < ${#commands[@]}; index++ )); do
-    printf "   %-${longest_command}s  %s\n" "${commands[$index]}" \
+    printf "   "`clr_yellow "%-${longest_command}s"`"  %s\n" "${commands[$index]}" \
       "$(truncate "$summary_length" "${summaries[$index]}")"
   done
 }
@@ -47,7 +49,7 @@ print_help() {
 }
 
 command_path() {
-  command -v "sub-$command" || command -v "sub-sh-$command" || true
+  command -v "${SUB_COMMAND_PREFIX}-$command" || command -v "${SUB_COMMAND_PREFIX}-sh-$command" || true
 }
 
 summary() {
@@ -82,20 +84,21 @@ fi
 
 command="$1"
 case "$command" in
-"") echo "Usage: sub <command> [<args>]
+"" | "-h" | "--help" | "help")
+    echo "Usage: ${SUB_COMMAND_NAME} <command> [<args>]
 
-Some useful sub commands are:
-$(print_summaries)
+    Some useful ${SUB_COMMAND_NAME} commands are:
+    $(print_summaries)
 
-See 'sub help <command>' for information on a specific command."
-;;
+    See '${SUB_COMMAND_NAME} <command> --help' for information on a specific command."
+    ;;
 *)
   file="$(command_path "$command")"
 
   if [ -n "$file" ]; then
     print_help "$file"
   else
-    echo "sub: no such command \`$command'" >&2
+    echo "${SUB_COMMAND_NAME}: no such command \`$command\`" >&2
     exit 1
   fi
 esac

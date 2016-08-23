@@ -1,62 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-resolve_link() {
-  $(type -p greadlink readlink | head -1) "$1"
-}
+# parent directory of this script
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
-abs_dirname() {
-  local cwd="$(pwd)"
-  local path="$1"
+. "$BASE_DIR/lib/sub.bash"
 
-  while [ -n "$path" ]; do
-    cd "${path%/*}"
-    local name="${path##*/}"
-    path="$(resolve_link "$name" || true)"
-  done
-
-  pwd
-  cd "$cwd"
-}
-
-_sub_source() {
-  local out=`grep $'#[ \t]*SOURCE' $1`
-  if [ "$out" == "" ]; then
-    echo "0"
-    return
-  fi
-  echo "1"
-}
-
-
-#export _SUB_ROOT="$(abs_dirname "$libexec_path")"
-#export PATH="${libexec_path}:$PATH"
-
-export _original_path=$PATH
-source_command=0
-libexec_path="$(abs_dirname "$0")"
-export PATH="$libexec_path:$PATH"
-
-command="$1"
-case "$command" in
-"" | "-h" | "--help" )
-  sub-help
-  ;;
-* )
-  command_path="$(command -v "sub-$command" || true)"
-  if [ ! -x "$command_path" ]; then
-    echo "sub: no such command '$command'"
-  else
-      source_command=$(_sub_source $command_path)
-      shift
-      if [[ "$1" == '--complete' ]]; then
-          $command_path "$@"
-      elif [[ "$source_command" -eq 0 ]]; then
-          $command_path "$@"
-      else 
-          . $command_path "$@"
-      fi
-  fi
-  ;;
-esac
-export PATH=$original_path
+sub_command_main "$@"
