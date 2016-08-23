@@ -78,7 +78,6 @@ function sub_command_main() {
       fi
   ;;
   * )
-    # command_path="$(command -v "${SUB_COMMAND_NAME}-$1" || true)"
     command_path="$(command -v "${SUB_COMMAND_PREFIX}-${1}" || true)"
     if [ ! -x "$command_path" ]; then
       echo "${SUB_COMMAND_NAME}: no such command \`$1\`"

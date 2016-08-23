@@ -36,15 +36,17 @@ print_summaries() {
 
 print_help() {
   local file="$1"
+  local cmd=$2
   local usage="$(usage "$file")"
 
   if [ -n "$usage" ]; then
-    echo "$usage"
+    echo $(eval echo $usage)
 
     local help="$(help "$file")"
-    [ -n "$help" ] && echo && echo "$help"
+    [ -n "$help" ] && echo && echo $(eval echo $help)
   else
-    echo "Sorry, this command isn't documented yet."
+    echo "Sorry, the \`${cmd}\` command isn't documented yet."
+    echo "You might consider adding documentation to ${file}"
   fi
 }
 
@@ -96,7 +98,7 @@ case "$command" in
   file="$(command_path "$command")"
 
   if [ -n "$file" ]; then
-    print_help "$file"
+    print_help "$file" "$command"
   else
     echo "${SUB_COMMAND_NAME}: no such command \`$command\`" >&2
     exit 1
