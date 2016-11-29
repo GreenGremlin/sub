@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# SOURCE
+# to instantiate with this, add:
+# tmp=`pwd`; # cd SUB_PATH && . sub-init && cd $tmp
+# to your bashrc
+
+# SUB_COMMAND_NAME is the command that users will call to execute sub
+[ -z ${SUB_COMMAND_NAME+x} ] && export SUB_COMMAND_NAME="sub"
+
+[ -z ${_SUB_ROOT+x} ] && export _SUB_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
+[ -z ${SUB_PATH+x} ] && export SUB_PATH="$_SUB_ROOT/libexec"
+
+export SUB_LIB_PATH="$_SUB_ROOT/lib"
+
+_sub_resolve_link() {
+    $(type -p greadlink readlink | head -1) "$1"
+}
+
+_sub_abs_dirname() {
+    local cwd="$(pwd)"
+    local path="$1"
+
+    while [ -n "$path" ]; do
+        cd "${path%/*}"
+        local name="${path##*/}"
+        path="$(_sub_resolve_link "$name" || true)"
+    done
+
+    pwd
+    cd "$cwd"
+}
+
+# determine if a sub-command is a source command
+_sub_source() {
+    local out=`grep $'#[ \t]*SOURCE' $1`
+    if [ "$out" == "" ]; then
+        echo "0"
+        return
+    fi
+    echo "1"
+}
+
+
+function sub_command_main() {
+    local original_path=$PATH
+    local source_command=0
+    export PATH="$SUB_LIB_PATH:$SUB_PATH:$PATH"
+
+    last_arg="${@: -1}"
+    if [[ "$last_arg" = "-h" || "$last_arg" = "--help" || "$last_arg" = "help" || -z "$1" ]]; then
+        sub_command="help"
+    else
+        sub_command="$1"
+    fi
+
+    command_path="$(command -v "${sub_command}" || true)"
+    catchall_path="$(command -v "_default" || true)"
+
+    if [[ "$sub_command" = "help" || "$sub_command" = "commands" || "$sub_command" = "completions" ]]; then
+        # `help` and `commands` for other prefixes defaults to sub `help` and `commands`
+        if [ -x "$command_path" ]; then
+            "${sub_command}" "$@"
+        else
+            if [ "$sub_command" = "$1" ]; then
+                shift
+            fi
+            "${SUB_LIB_PATH}/${sub_command}" "$@"
+        fi
+    else
+        if [[ ! -x "$command_path" && ! -x "$catchall_path" ]]; then
+            echo "${SUB_COMMAND_NAME}: unknown command \`$sub_command\`"
+        else
+            if [[ ! -x "$command_path" && -x "$catchall_path" ]]; then
+                command_path="$catchall_path"
+            else
+                shift
+            fi
+            source_command=$(_sub_source $command_path)
+            if [[ "${sub_command}" == "--complete" ]]; then
+                $command_path "$@"
+            elif [[ "$source_command" -eq 0 ]]; then
+                $command_path "$@"
+            else
+                . $command_path "$@"
+            fi
+        fi
+    fi
+    export PATH=$original_path
+}

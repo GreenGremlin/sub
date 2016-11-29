@@ -40,7 +40,7 @@ who
 Of course, this is a simple example...but now `rush who` should work!
 
     $ rush who
-    qrush     console  Sep 14 17:15 
+    qrush     console  Sep 14 17:15
 
 You can run *any* executable in the `libexec` directly, as long as it follows the `NAME-SUBCOMMAND` convention. Try out a Ruby script or your favorite language!
 
@@ -157,14 +157,14 @@ So if you wanted to create something that navigated you workspace:
 #!/usr/bin/env bash
 # SOURCE
 # Usage: sub w {directoryname}
-# Summary: A quick way to navigate to a folder inside your "workspace" location. 
+# Summary: A quick way to navigate to a folder inside your "workspace" location.
 
 if [ ! -d ~/workspace ]; then
     mkdir -p ~/workspace
 fi
 
 # provide sub completions
-if [ "$1" == "--complete" ]; then  
+if [ "$1" == "--complete" ]; then
     ls ~/workspace
     exit
 fi
@@ -181,16 +181,6 @@ Let's say we want to shorten up our `rush who` to `rush w`. Just make a symlink!
     ln -s rush-who rush-w
 
 Now, `rush w` should run `libexec/rush-who`, and save you mere milliseconds of typing every day!
-
-## Prepare your sub
-
-Clone this repo:
-
-    git clone git://github.com/37signals/sub.git [name of your sub]
-    cd [name of your sub]
-    ./prepare.sh [name of your sub]
-
-The prepare script will run you through the steps for making your own sub. Also, don't call it `sub`, by the way! Give it a better name.
 
 ## Install your sub
 

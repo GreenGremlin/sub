@@ -1,0 +1,35 @@
+# parent directory of this script
+_SUB_BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
+. "$_SUB_BASE_DIR/lib/sub"
+
+function _sub_alias() {
+    command_name=$1
+    shift
+    # SUB_COMMAND_NAME="${command_name}" sub_command_main "$@";
+    sub_command_main "$@";
+}
+
+# function _sub_alias_prefixed() {
+#     command_name=$1
+#     orig_prefix=$SUB_COMMAND_PREFIX;
+#     SUB_COMMAND_PREFIX="${command_name}" _sub_alias "$@";
+# }
+
+if [ -n "$SUB_ALIAS" ]; then
+    # eval "function ${SUB_ALIAS}() { _sub_alias ${SUB_ALIAS} \"\$@\"; }"
+    eval "function ${SUB_ALIAS}() { sub_command_main \"\$@\"; }"
+
+    # SUB_COMMAND_NAME="${SUB_ALIAS}" . "$_SUB_BASE_DIR/completions/init.sh"
+fi
+
+# { for command_name in ${SUB_PREFIX//:/$'\n'}; do
+#     eval "function ${command_name}() { _sub_alias_prefixed ${command_name} \"\$@\"; }"
+#
+#     SUB_COMMAND_NAME="${command_name}" . "$_SUB_BASE_DIR/completions/init.sh"
+#   done
+# }
+
+eval "function ${SUB_COMMAND_NAME}() { sub_command_main \"\$@\"; }"
+
+. "$_SUB_BASE_DIR/completions/init.sh"

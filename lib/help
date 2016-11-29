@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Summary: Prints help text for all commands
+set -e
+
+. "$_SUB_ROOT/share/colors.bash"
+
+print_summaries() {
+    local commands=()
+    local summaries=()
+    local longest_command=0
+    local command
+
+    for command in $("${SUB_LIB_PATH}/commands" --no-color); do
+        local file="$(command_path "$command")"
+        if [ ! -h "$file" ]; then
+            local summary="$(summary "$file")"
+            commands["${#commands[@]}"]="$command"
+            if [ -n "$summary" ]; then
+                summaries["${#summaries[@]}"]=$(echo ${summary/\{SUB\}/$SUB_COMMAND_NAME})
+            else
+                summaries["${#summaries[@]}"]=`clr_magenta "* No help summary found for "``clr_cyan "$command"`
+            fi
+            if [ "${#command}" -gt "$longest_command" ]; then
+                longest_command="${#command}"
+            fi
+        fi
+    done
+
+    local index
+    local columns="$(tput cols)"
+    local summary_length=$(( $columns - $longest_command - 5 ))
+
+    for (( index=0; index < ${#commands[@]}; index++ )); do
+        printf `clr_yellow "%-${longest_command}s"`"    %s\n" "${commands[$index]}" \
+            "${summaries[$index]}"
+            # "$(truncate "$summary_length" "${summaries[$index]}")"
+    done
+}
+
+print_help() {
+    local file="$1"
+    local cmd=$2
+    local usage="$(usage "$file")"
+
+    if [ -n "$usage" ]; then
+        echo `clr_cyan "Usage" clr_reset`": ${usage/\{SUB\}/$SUB_COMMAND_NAME}"
+
+        local help="$(help "$file")"
+        [ -n "$help" ] && echo && echo "${help/\{SUB\}/$SUB_COMMAND_NAME}"
+    else
+        echo && echo "Sorry, the \`${cmd}\` command isn't documented yet."
+    fi
+}
+
+command_path() {
+    command -v "${SUB_PATH}/$1" || command -v "${SUB_PATH}/sh-$1" || command -v "${SUB_LIB_PATH}/$1" ||true
+}
+
+summary() {
+    sed -n "s/^# Summary: \(.*\)/\1/p" "$1"
+}
+
+usage() {
+    sed -n "s/^# Usage: \(.*\)/\1/p" "$1"
+}
+
+help() {
+    awk '/^[^#]/{p=0} /^# Help:/{p=1} p' "$1" | sed "s/^# Help: //;s/^# //;s/^#//"
+}
+
+truncate() {
+    local max_length="$1"
+    local string="$2"
+
+    if [ "${#string}" -gt "$max_length" ]; then
+        local length=$(( $max_length - 3 ))
+        echo "${string:0:$length}..."
+    else
+        echo "$string"
+    fi
+}
+echo "$@"
+
+# Provide sub completions
+if [ "$1" = "--complete" ]; then
+    exec "${SUB_LIB_PATH}/commands"
+    exit
+fi
+
+sub_command="$1"
+case "$sub_command" in
+"" | "-h" | "--help" | "help")
+    echo "Usage: ${SUB_COMMAND_NAME} <sub-command> [...]"
+    echo
+    echo "Sub-command help: "`clr_green "${SUB_COMMAND_NAME} <sub-command> --help"`
+    echo
+    echo "Available sub-commands:"
+    echo
+    print_summaries
+    ;;
+*)
+    file="$(command_path "$sub_command")"
+
+    if [ -n "$file" ]; then
+        print_help "$file" "$sub_command"
+    else
+        echo "${SUB_COMMAND_NAME}: no such command \`$sub_command\`" >&2
+        exit 1
+    fi
+esac
