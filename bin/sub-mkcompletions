@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 set -e
 
+if [ $# -lt 2 ]; then
+    echo "Usage sub-mkcompletions <command_name> <command_path> <shell>"
+    exit 1
+fi
+
+if [ ! -d $2 ]; then
+    echo "$2 is not a valid directory"
+    exit 1
+fi
+
 SUB_COMMAND_NAME=$1
 SUB_COMMAND_PATH=$(cd $2; pwd)
 SHELL_TYPE=${3:-bash}
 
-BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+if [ -L "${BASH_SOURCE[0]}"]; then
+    BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd $(dirname $(readlink "${BASH_SOURCE[0]}")) && cd .. && pwd )"
+else
+    BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+fi
 
 cat << EOM
 export SUB_COMMAND_NAME=$SUB_COMMAND_NAME

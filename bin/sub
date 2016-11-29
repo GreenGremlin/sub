@@ -5,8 +5,15 @@ export SUB_COMMAND_NAME=$1
 export SUB_COMMAND_PATH=$(cd $2; pwd)
 
 # parent directory of this script
-export BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+if [ -L "${BASH_SOURCE[0]}"]; then
+    export BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd $(dirname $(readlink "${BASH_SOURCE[0]}")) && cd .. && pwd )"
+else
+    export BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+fi
 
 . "$BASE_DIR/lib/sub"
 
 sub_command_main "$@"
+
+
+echo "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd $(dirname $(readlink "${BASH_SOURCE[0]}")) && cd .. && pwd )"
