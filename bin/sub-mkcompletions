@@ -2,7 +2,7 @@
 set -e
 
 if [ $# -lt 2 ]; then
-    echo "Usage sub-mkcompletions <command_name> <command_path> <shell>"
+    echo "Usage: sub-mkcompletions <command_name> <command_path> <shell>"
     exit 1
 fi
 

@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 set -e
 
+if [ $# -lt 2 ]; then
+    echo "Usage: sub <command_name> <command_path>"
+    exit 1
+fi
+
 export SUB_COMMAND_NAME=$1
 export SUB_COMMAND_PATH=$(cd $2; pwd)
 
 # parent directory of this script
-if [ -L "${BASH_SOURCE[0]}"]; then
+if [ -L "${BASH_SOURCE[0]}" ]; then
     export BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd $(dirname $(readlink "${BASH_SOURCE[0]}")) && cd .. && pwd )"
 else
     export BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 fi
+export _SUB_ROOT=$BASE_DIR;
 
 . "$BASE_DIR/lib/sub"
 
