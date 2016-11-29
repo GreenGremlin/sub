@@ -2,7 +2,7 @@
 # Summary: Prints help text for all commands
 set -e
 
-. "$_SUB_ROOT/lib/colors.bash"
+. "$_SUB_ROOT/share/colors.bash"
 
 print_summaries() {
     local commands=()

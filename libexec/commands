@@ -6,7 +6,7 @@
 
 set -e
 
-. "$_SUB_ROOT/lib/colors.bash"
+. "$_SUB_ROOT/share/colors.bash"
 
 # Provide sub completions
 if [ "$1" = "--complete" ]; then
