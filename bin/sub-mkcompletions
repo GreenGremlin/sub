@@ -15,7 +15,7 @@ SUB_COMMAND_NAME=$1
 SUB_COMMAND_PATH=$(cd $2; pwd)
 SHELL_TYPE=${3:-bash}
 
-if [ -L "${BASH_SOURCE[0]}"]; then
+if [ -L "${BASH_SOURCE[0]}" ]; then
     BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd $(dirname $(readlink "${BASH_SOURCE[0]}")) && cd .. && pwd )"
 else
     BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
