@@ -7,7 +7,9 @@ if [ $# -lt 2 ]; then
 fi
 
 export SUB_COMMAND_NAME=$1
-export SUB_COMMAND_PATH=$(cd $2; pwd)
+shift
+export SUB_COMMAND_PATH=$(cd $1; pwd)
+shift
 
 # parent directory of this script
 if [ -L "${BASH_SOURCE[0]}" ]; then
