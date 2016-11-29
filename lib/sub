@@ -52,6 +52,7 @@ function sub_command_main() {
         sub_command="help"
     else
         sub_command="$1"
+        shift
     fi
 
     command_path="$(command -v "${sub_command}" || true)"
@@ -62,9 +63,6 @@ function sub_command_main() {
         if [ -x "$command_path" ]; then
             "${sub_command}" "$@"
         else
-            if [ "$sub_command" = "$1" ]; then
-                shift
-            fi
             "${SUB_LIB_PATH}/${sub_command}" "$@"
         fi
     else
