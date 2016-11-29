@@ -2,7 +2,7 @@
 # Summary: Prints help text for all commands
 set -e
 
-. "$_SUB_ROOT/share/colors.bash"
+. "$_SUB_ROOT/lib/colors.bash"
 
 print_summaries() {
     local commands=()
@@ -53,7 +53,7 @@ print_help() {
 }
 
 command_path() {
-    command -v "${SUB_PATH}/$1" || command -v "${SUB_PATH}/sh-$1" || command -v "${SUB_LIB_PATH}/$1" ||true
+    command -v "${SUB_COMMAND_PATH}/$1" || command -v "${SUB_COMMAND_PATH}/sh-$1" || command -v "${SUB_LIB_PATH}/$1" ||true
 }
 
 summary() {

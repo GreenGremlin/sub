@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+SUB_COMMAND_NAME=$1
+SUB_COMMAND_PATH=$(cd $2; pwd)
+SHELL_TYPE=${3:-bash}
+
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
+cat << EOM
+export SUB_COMMAND_NAME=$SUB_COMMAND_NAME
+export SUB_COMMAND_PATH=$SUB_COMMAND_PATH
+. $BASE_DIR/lib/sub
+
+. $BASE_DIR/completions/sub.$SHELL_TYPE
+
+EOM

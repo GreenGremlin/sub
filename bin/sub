@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+export SUB_COMMAND_NAME=$1
+export SUB_COMMAND_PATH=$(cd $2; pwd)
+
+# parent directory of this script
+export BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
+. "$BASE_DIR/lib/sub"
+
+sub_command_main "$@"

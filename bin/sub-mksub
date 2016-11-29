@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -e
+
+SUB_COMMAND_NAME=$1
+SUB_COMMAND_PATH=$(cd $2; pwd)
+
+cat << EOM
+#!/usr/bin/env bash
+set -e
+
+sub $SUB_COMMAND_NAME $SUB_COMMAND_PATH "\$@"
+
+EOM

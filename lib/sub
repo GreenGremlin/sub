@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # SOURCE
 # to instantiate with this, add:
-# tmp=`pwd`; # cd SUB_PATH && . sub-init && cd $tmp
+# tmp=`pwd`; # cd SUB_COMMAND_PATH && . sub-init && cd $tmp
 # to your bashrc
 
 # SUB_COMMAND_NAME is the command that users will call to execute sub
-[ -z ${SUB_COMMAND_NAME+x} ] && export SUB_COMMAND_NAME="sub"
+# [ -z ${SUB_COMMAND_NAME+x} ] && export SUB_COMMAND_NAME="sub"
 
 [ -z ${_SUB_ROOT+x} ] && export _SUB_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
-[ -z ${SUB_PATH+x} ] && export SUB_PATH="$_SUB_ROOT/libexec"
+# [ -z ${SUB_COMMAND_PATH+x} ] && export SUB_COMMAND_PATH="$_SUB_ROOT/commands"
 
-export SUB_LIB_PATH="$_SUB_ROOT/lib"
+export SUB_LIB_PATH="$_SUB_ROOT/libexec"
 
 _sub_resolve_link() {
     $(type -p greadlink readlink | head -1) "$1"
@@ -45,7 +45,7 @@ _sub_source() {
 function sub_command_main() {
     local original_path=$PATH
     local source_command=0
-    export PATH="$SUB_LIB_PATH:$SUB_PATH:$PATH"
+    export PATH="$SUB_LIB_PATH:$SUB_COMMAND_PATH:$PATH"
 
     last_arg="${@: -1}"
     if [[ "$last_arg" = "-h" || "$last_arg" = "--help" || "$last_arg" = "help" || -z "$1" ]]; then

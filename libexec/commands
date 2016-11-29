@@ -6,7 +6,7 @@
 
 set -e
 
-[ -f "$_SUB_ROOT/share/colors.bash" ] && . "$_SUB_ROOT/share/colors.bash"
+. "$_SUB_ROOT/lib/colors.bash"
 
 # Provide sub completions
 if [ "$1" = "--complete" ]; then
@@ -30,7 +30,7 @@ if [ "$1" != "--no-color" ]; then
 else
   function color_fn { echo $1; }
 fi
-{ for path in ${SUB_PATH//:/$'\n'}; do
+{ for path in ${SUB_COMMAND_PATH//:/$'\n'}; do
     for command in "${path}/"*; do
       command=$(basename $command)
     #   command="${command##*${SUB_COMMAND_PREFIX}-}"
