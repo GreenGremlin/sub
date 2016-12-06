@@ -71,8 +71,6 @@ function sub_command_main() {
         else
             if [[ ! -x "$command_path" && -x "$catchall_path" ]]; then
                 command_path="$catchall_path"
-            else
-                shift
             fi
             source_command=$(_sub_source $command_path)
             if [[ "${sub_command}" == "--complete" ]]; then
