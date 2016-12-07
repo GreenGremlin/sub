@@ -7,6 +7,7 @@
 set -e
 
 . "$_SUB_ROOT/share/colors.bash"
+[[ -r "$SUB_COMMAND_PATH/_alias" ]] && . "$SUB_COMMAND_PATH/_alias"
 
 # Provide sub completions
 if [ "$1" = "--complete" ]; then
@@ -33,7 +34,6 @@ fi
 { for path in ${SUB_COMMAND_PATH//:/$'\n'}; do
     for command in "${path}/"*; do
       command=$(basename $command)
-    #   command="${command##*${SUB_COMMAND_PREFIX}-}"
       if [ -n "$sh" ]; then
         if [ ${command:0:3} = "sh-" ]; then
           echo -e `color_fn ${command##sh-}`
@@ -48,6 +48,14 @@ fi
     done
   done
   # all subs get `help` and `commands`
-  echo `color_fn "help"`
-  echo `color_fn "commands"`
+  echo -e `color_fn "help"`
+  echo -e `color_fn "commands"`
+  # sub aliases
+  if [[ -r "$SUB_COMMAND_PATH/_alias" ]]; then
+      IFS="="
+      while read -r name value; do
+          echo -e `color_fn $name`
+        #   echo "Content of $name is ${value//\"/}"
+      done < "$SUB_COMMAND_PATH/_alias"
+  fi
 } | sort | uniq

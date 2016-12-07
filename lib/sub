@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 # SOURCE
-# to instantiate with this, add:
-# tmp=`pwd`; # cd SUB_COMMAND_PATH && . sub-init && cd $tmp
-# to your bashrc
-
-# SUB_COMMAND_NAME is the command that users will call to execute sub
-# [ -z ${SUB_COMMAND_NAME+x} ] && export SUB_COMMAND_NAME="sub"
 
 [ -z ${_SUB_ROOT+x} ] && export _SUB_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-
-# [ -z ${SUB_COMMAND_PATH+x} ] && export SUB_COMMAND_PATH="$_SUB_ROOT/commands"
 
 export SUB_LIB_PATH="$_SUB_ROOT/libexec"
 
@@ -73,6 +65,19 @@ function sub_command_main() {
                 command_path="$catchall_path"
             fi
             source_command=$(_sub_source $command_path)
+
+            if [[ -r "$SUB_COMMAND_PATH/_alias" ]]; then
+                IFS="="
+                while read -r name value; do
+                    if [[ "$sub_command" == "$name" ]]; then
+                        value="${value%\"}"
+                        value="${value#\"}"
+                        eval "${value} $@"
+                        exit
+                    fi
+                  #   echo "Content of $name is ${value//\"/}"
+                done < "$SUB_COMMAND_PATH/_alias"
+            fi
             if [[ "${sub_command}" == "--complete" ]]; then
                 $command_path "$@"
             elif [[ "$source_command" -eq 0 ]]; then
