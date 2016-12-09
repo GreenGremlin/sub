@@ -12,7 +12,7 @@ _sub_completion() {
   local prev_word="${COMP_WORDS[COMP_CWORD - 1]}"
 
   if [ "$COMP_CWORD" -eq 1 ]; then
-    COMPREPLY=( $(compgen -W "$(sub_command_main commands --no-color)" -- "$word") )
+    COMPREPLY=( $(compgen -W "$(sub_command_main list --no-color)" -- "$word") )
   else
     local command="${COMP_WORDS[1]}"
     local completions="$(COMP_PREV="$prev_word" COMP_CWORD="$COMP_CWORD" sub_command_main completions "$command")"

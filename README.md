@@ -48,7 +48,7 @@ You can run *any* executable in the `libexec` directly, as long as it follows th
 
 You get a few commands that come with your sub:
 
-* `commands`: Prints out every subcommand available
+* `list`: Prints out every subcommand available
 * `completions`: Helps kick off subcommand autocompletion.
 * `help`: Document how to use each subcommand
 * `init`: Shows how to load your sub with autocompletions, based on your shell.
@@ -71,7 +71,7 @@ You can also use this environment variable to call other commands inside of your
 
 Each subcommand can opt into self-documentation, which allows the subcommand to provide information when `sub` and `sub help [SUBCOMMAND]` is run.
 
-This is all done by adding a few magic comments. Here's an example from `rush who` (also see `sub commands` for another example):
+This is all done by adding a few magic comments. Here's an example from `rush who` (also see `sub list` for another example):
 
 ``` bash
 #!/usr/bin/env bash
@@ -94,8 +94,8 @@ Now, when you run `sub`, the "Summary" magic comment will now show up:
     usage: sub <command> [<args>]
 
     Some useful sub commands are:
-       commands               List all sub commands
-       who                    Check who's logged in
+       list    List all sub commands
+       who     Check who's logged in
 
 And running `sub help who` will show the "Usage" magic comment, and then the "Help" comment block:
 

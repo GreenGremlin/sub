@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
-# Summary: Prints help text for all commands
+# Summary: Prints help text for all {SUB} commands
 set -e
 
+. "$_SUB_ROOT/lib/doc_parse.bash"
 . "$_SUB_ROOT/share/colors.bash"
+
+# Provide sub completions
+if [ "$1" = "--complete" ]; then
+    exec "$SUB_LIB_PATH/list"
+    exit
+fi
+
+command_path() {
+    command -v "$SUB_COMMAND_PATH/$1" || command -v "$SUB_COMMAND_PATH/sh-$1" || command -v "$SUB_LIB_PATH/$1" ||true
+}
 
 print_summaries() {
     local commands=()
@@ -10,13 +21,13 @@ print_summaries() {
     local longest_command=0
     local command
 
-    for command in $("${SUB_LIB_PATH}/commands" --no-color); do
+    for command in $("$SUB_LIB_PATH/list" --no-color); do
         local file="$(command_path "$command")"
         if [ ! -h "$file" ]; then
-            local summary="$(summary "$file")"
+            local summary="$(parse_doc Summary "$file")"
             commands["${#commands[@]}"]="$command"
             if [ -n "$summary" ]; then
-                summaries["${#summaries[@]}"]=$(echo ${summary/\{SUB\}/$SUB_COMMAND_NAME})
+                summaries["${#summaries[@]}"]=$(echo $summary)
             else
                 summaries["${#summaries[@]}"]=`clr_magenta "* No help summary found for "``clr_cyan "$command"`
             fi
@@ -31,68 +42,52 @@ print_summaries() {
     local summary_length=$(( $columns - $longest_command - 5 ))
 
     for (( index=0; index < ${#commands[@]}; index++ )); do
-        printf `clr_yellow "%-${longest_command}s"`"    %s\n" "${commands[$index]}" \
+        printf `clr_yellow "%-$longest_command"`"    %s\n" "${commands[$index]}" \
             "${summaries[$index]}"
-            # "$(truncate "$summary_length" "${summaries[$index]}")"
     done
 }
 
 print_help() {
     local file="$1"
     local cmd=$2
-    local usage="$(usage "$file")"
+    local usage="$(parse_doc Usage "$file")"
+    local summary="$(parse_doc Summary "$file")"
+    local executes="$(parse_doc Executes "$file")"
+    local options="$(parse_multiline_doc Options "$file")"
+    local help_text="$(parse_multiline_doc Help "$file")"
 
-    if [ -n "$usage" ]; then
-        echo `clr_cyan "Usage" clr_reset`": ${usage/\{SUB\}/$SUB_COMMAND_NAME}"
+    if [[ -n "$usage" || -n "$help" || -n "$summary" ]]; then
+        if [ -n "$usage" ]; then
+            echo && echo `clr_cyan "Usage" clr_reset`": $usage"
+        fi
 
-        local help="$(help "$file")"
-        [ -n "$help" ] && echo && echo "${help/\{SUB\}/$SUB_COMMAND_NAME}"
+        if [ -n "$summary" ]; then
+            echo && echo "$summary"
+        fi
+
+        if [ -n "$executes" ]; then
+            echo && echo `clr_cyan "Executes" clr_reset`": $executes"
+        fi
+
+        if [ -n "$options" ]; then
+            echo && echo `clr_cyan "Options" clr_reset`":"
+            echo && echo "$(indent "$options" 2)"
+        fi
+
+        if [ -n "$help_text" ]; then
+            echo && echo "$help_text"
+        fi
     else
-        echo && echo "Sorry, the \`${cmd}\` command isn't documented yet."
+        echo && echo "Sorry, the \`$cmd\` command isn't documented yet."
     fi
 }
-
-command_path() {
-    command -v "${SUB_COMMAND_PATH}/$1" || command -v "${SUB_COMMAND_PATH}/sh-$1" || command -v "${SUB_LIB_PATH}/$1" ||true
-}
-
-summary() {
-    sed -n "s/^# Summary: \(.*\)/\1/p" "$1"
-}
-
-usage() {
-    sed -n "s/^# Usage: \(.*\)/\1/p" "$1"
-}
-
-help() {
-    awk '/^[^#]/{p=0} /^# Help:/{p=1} p' "$1" | sed "s/^# Help: //;s/^# //;s/^#//"
-}
-
-truncate() {
-    local max_length="$1"
-    local string="$2"
-
-    if [ "${#string}" -gt "$max_length" ]; then
-        local length=$(( $max_length - 3 ))
-        echo "${string:0:$length}..."
-    else
-        echo "$string"
-    fi
-}
-echo "$@"
-
-# Provide sub completions
-if [ "$1" = "--complete" ]; then
-    exec "${SUB_LIB_PATH}/commands"
-    exit
-fi
 
 sub_command="$1"
 case "$sub_command" in
 "" | "-h" | "--help" | "help")
-    echo "Usage: ${SUB_COMMAND_NAME} <sub-command> [...]"
+    echo "Usage: $SUB_COMMAND_NAME <sub-command> [...]"
     echo
-    echo "Sub-command help: "`clr_green "${SUB_COMMAND_NAME} <sub-command> --help"`
+    echo "Sub-command help: "`clr_green "$SUB_COMMAND_NAME <sub-command> --help"`
     echo
     echo "Available sub-commands:"
     echo
@@ -104,7 +99,7 @@ case "$sub_command" in
     if [ -n "$file" ]; then
         print_help "$file" "$sub_command"
     else
-        echo "${SUB_COMMAND_NAME}: no such command \`$sub_command\`" >&2
+        echo "$SUB_COMMAND_NAME: no such command \`$sub_command\`" >&2
         exit 1
     fi
 esac

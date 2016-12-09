@@ -5,26 +5,10 @@
 
 export SUB_LIB_PATH="$_SUB_ROOT/libexec"
 
-_sub_resolve_link() {
-    $(type -p greadlink readlink | head -1) "$1"
-}
-
-_sub_abs_dirname() {
-    local cwd="$(pwd)"
-    local path="$1"
-
-    while [ -n "$path" ]; do
-        cd "${path%/*}"
-        local name="${path##*/}"
-        path="$(_sub_resolve_link "$name" || true)"
-    done
-
-    pwd
-    cd "$cwd"
-}
+. "$_SUB_ROOT/lib/doc_parse.bash"
 
 # determine if a sub-command is a source command
-_sub_source() {
+_is_source_sub() {
     local out=`grep $'#[ \t]*SOURCE' $1`
     if [ "$out" == "" ]; then
         echo "0"
@@ -33,11 +17,10 @@ _sub_source() {
     echo "1"
 }
 
-
 function sub_command_main() {
     local original_path=$PATH
-    local source_command=0
-    export PATH="$SUB_LIB_PATH:$SUB_COMMAND_PATH:$PATH"
+    local is_source_command=0
+    export PATH="$SUB_COMMAND_PATH:$SUB_LIB_PATH:$PATH"
 
     last_arg="${@: -1}"
     if [[ "$last_arg" = "-h" || "$last_arg" = "--help" || "$last_arg" = "help" || -z "$1" ]]; then
@@ -47,44 +30,30 @@ function sub_command_main() {
         shift
     fi
 
-    command_path="$(command -v "${sub_command}" || true)"
-    catchall_path="$(command -v "_default" || true)"
+    command_path="$(get_command_path "$sub_command")"
 
-    if [[ "$sub_command" = "help" || "$sub_command" = "commands" || "$sub_command" = "completions" ]]; then
-        # `help` and `commands` for other prefixes defaults to sub `help` and `commands`
-        if [ -x "$command_path" ]; then
-            "${sub_command}" "$@"
-        else
-            "${SUB_LIB_PATH}/${sub_command}" "$@"
+    if [[ ! -x "$command_path" ]]; then
+        if [[ -r "$SUB_COMMAND_PATH/_alias" ]]; then
+            IFS="="
+            while read -r name value; do
+                if [[ "$sub_command" == "$name" ]]; then
+                    value="${value%\"}"
+                    value="${value#\"}"
+                    eval "${value} $@"
+                    export PATH=$original_path
+                    exit
+                fi
+              #   echo "Content of $name is ${value//\"/}"
+            done < "$SUB_COMMAND_PATH/_alias"
         fi
+        echo "${SUB_COMMAND_NAME}: unknown command \`$sub_command\`"
     else
-        if [[ ! -x "$command_path" && ! -x "$catchall_path" ]]; then
-            echo "${SUB_COMMAND_NAME}: unknown command \`$sub_command\`"
-        else
-            if [[ ! -x "$command_path" && -x "$catchall_path" ]]; then
-                command_path="$catchall_path"
-            fi
-            source_command=$(_sub_source $command_path)
+        is_source_command=$(_is_source_sub $command_path)
 
-            if [[ -r "$SUB_COMMAND_PATH/_alias" ]]; then
-                IFS="="
-                while read -r name value; do
-                    if [[ "$sub_command" == "$name" ]]; then
-                        value="${value%\"}"
-                        value="${value#\"}"
-                        eval "${value} $@"
-                        exit
-                    fi
-                  #   echo "Content of $name is ${value//\"/}"
-                done < "$SUB_COMMAND_PATH/_alias"
-            fi
-            if [[ "${sub_command}" == "--complete" ]]; then
-                $command_path "$@"
-            elif [[ "$source_command" -eq 0 ]]; then
-                $command_path "$@"
-            else
-                . $command_path "$@"
-            fi
+        if [[ "$is_source_command" -eq 1 && "${sub_command}" != "--complete" ]]; then
+            . $command_path "$@"
+        else
+            $command_path "$@"
         fi
     fi
     export PATH=$original_path

@@ -10,7 +10,7 @@ _sub_completion() {
   word="${words[2]}"
 
   if [ "${#words}" -eq 2 ]; then
-    completions="$(sub_command_main commands --no-color)"
+    completions="$(sub_command_main list --no-color)"
   else
     completions="$(sub_command_main completions "${word}")"
   fi
