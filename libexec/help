@@ -38,7 +38,7 @@ print_summaries() {
     local summary_length=$(( $columns - $longest_command - 5 ))
 
     for (( index=0; index < ${#commands[@]}; index++ )); do
-        printf `clr_yellow "%-$longest_command"`"    %s\n" "${commands[$index]}" \
+        printf `clr_yellow "%-${longest_command}s"`"    %s\n" "${commands[$index]}" \
             "${summaries[$index]}"
     done
 }
