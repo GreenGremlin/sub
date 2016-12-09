@@ -11,10 +11,6 @@ if [ "$1" = "--complete" ]; then
     exit
 fi
 
-command_path() {
-    command -v "$SUB_COMMAND_PATH/$1" || command -v "$SUB_COMMAND_PATH/sh-$1" || command -v "$SUB_LIB_PATH/$1" ||true
-}
-
 print_summaries() {
     local commands=()
     local summaries=()
@@ -22,7 +18,7 @@ print_summaries() {
     local command
 
     for command in $("$SUB_LIB_PATH/list" --no-color); do
-        local file="$(command_path "$command")"
+        local file="$(get_command_path "$command")"
         if [ ! -h "$file" ]; then
             local summary="$(parse_doc Summary "$file")"
             commands["${#commands[@]}"]="$command"
@@ -94,7 +90,7 @@ case "$sub_command" in
     print_summaries
     ;;
 *)
-    file="$(command_path "$sub_command")"
+    file="$(get_command_path "$sub_command")"
 
     if [ -n "$file" ]; then
         print_help "$file" "$sub_command"

@@ -21,6 +21,6 @@ repeat_char() {
     printf "%0.s$1" $(seq 1 $2)
 }
 
-command_path() {
+get_command_path() {
     command -v "$SUB_COMMAND_PATH/$1" || command -v "$SUB_COMMAND_PATH/sh-$1" || command -v "$SUB_LIB_PATH/$1" ||true
 }
