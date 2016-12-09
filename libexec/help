@@ -25,7 +25,12 @@ print_summaries() {
             if [ -n "$summary" ]; then
                 summaries["${#summaries[@]}"]=$(echo $summary)
             else
-                summaries["${#summaries[@]}"]=`clr_magenta "* No help summary found for "``clr_cyan "$command"`
+                local executes="$(parse_doc Executes "$file")"
+                if [ -n "$executes" ]; then
+                    summaries["${#summaries[@]}"]=$(echo `clr_cyan "Executes" clr_reset`": $executes")
+                else
+                    summaries["${#summaries[@]}"]=`clr_magenta "* No help summary found for "``clr_cyan "$command"`
+                fi
             fi
             if [ "${#command}" -gt "$longest_command" ]; then
                 longest_command="${#command}"
