@@ -22,5 +22,19 @@ repeat_char() {
 }
 
 get_command_path() {
-    command -v "$SUB_COMMAND_PATH/$1" || command -v "$SUB_COMMAND_PATH/sh-$1" || command -v "$SUB_LIB_PATH/$1" ||true
+    for ext in sh js py rb; do
+        command_path=$(command -v "$SUB_COMMAND_PATH/$1.$ext")
+        if [[ -n "$command_path" ]]; then
+            break
+        fi
+    done
+    if [[ -z "$command_path" ]]; then
+        for ext in sh js py rb; do
+            command_path=$(command -v "$SUB_LIB_PATH/$1.$ext")
+            if [[ -n "$command_path" ]]; then
+                break
+            fi
+        done
+    fi
+    echo "$command_path"
 }

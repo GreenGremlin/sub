@@ -5,9 +5,12 @@ set -e
 . "$_SUB_ROOT/lib/doc_parse.bash"
 . "$_SUB_ROOT/share/colors.bash"
 
+list_command=$(get_command_path list)
+list_command_no_color="$list_command --no-color"
+
 # Provide sub completions
 if [ "$1" = "--complete" ]; then
-    exec "$SUB_LIB_PATH/list"
+    exec $list_command
     exit
 fi
 
@@ -17,9 +20,9 @@ print_summaries() {
     local longest_command=0
     local command
 
-    for command in $("$SUB_LIB_PATH/list" --no-color); do
+    for command in $($list_command_no_color); do
         local file="$(get_command_path "$command")"
-        if [ ! -h "$file" ]; then
+        if [[ -e "$file" && ! -h "$file" ]]; then
             local summary="$(parse_doc Summary "$file")"
             commands["${#commands[@]}"]="$command"
             if [ -n "$summary" ]; then

@@ -22,6 +22,9 @@ function sub_command_main() {
     local is_source_command=0
     export PATH="$SUB_COMMAND_PATH:$SUB_LIB_PATH:$PATH"
 
+    # todo: add config based option parsing and long > short option translation
+    # see: http://stackoverflow.com/questions/12022592/how-can-i-use-long-options-with-the-bash-getopts-builtin
+
     last_arg="${@: -1}"
     if [[ "$last_arg" = "-h" || "$last_arg" = "--help" || "$last_arg" = "help" || -z "$1" ]]; then
         sub_command="help"
@@ -53,7 +56,7 @@ function sub_command_main() {
         if [[ "$is_source_command" -eq 1 && "${sub_command}" != "--complete" ]]; then
             . $command_path "$@"
         else
-            $command_path "$@"
+            $command_path "$@" "$CWORDS"
         fi
     fi
     export PATH=$original_path
